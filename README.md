@@ -13,7 +13,7 @@ TypeScript/Express REST API for inventory and sales management with JWT authenti
 | ODM | Mongoose |
 | Auth | JWT + bcrypt |
 | Validation | Zod |
-| File Upload | Multer |
+| File Upload | Multer + Cloudinary |
 | API Docs | Swagger (swagger-jsdoc + swagger-ui-express) |
 | Logging | Winston + Morgan |
 | Process Manager | PM2 |
@@ -55,6 +55,11 @@ JWT_SECRET=your_strong_secret_here
 JWT_ACCESS_EXPIRATION_MINUTES=60
 UPLOAD_DIR=public/uploads/products
 MAX_FILE_SIZE_MB=5
+UPLOAD_STRATEGY=cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_FOLDER=mini-erp/products
 CLIENT_URL=http://localhost:5173
 ```
 
@@ -65,8 +70,13 @@ CLIENT_URL=http://localhost:5173
 | `MONGO_URI` | MongoDB connection string | — (required) |
 | `JWT_SECRET` | Secret for signing JWT tokens | — (required) |
 | `JWT_ACCESS_EXPIRATION_MINUTES` | Token expiry in minutes | `60` |
-| `UPLOAD_DIR` | Product image upload directory | `public/uploads/products` |
+| `UPLOAD_DIR` | Local fallback upload directory | `public/uploads/products` |
 | `MAX_FILE_SIZE_MB` | Max upload file size (MB) | `5` |
+| `UPLOAD_STRATEGY` | Upload backend strategy | `cloudinary` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | — |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | — |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | — |
+| `CLOUDINARY_FOLDER` | Folder name in Cloudinary | `mini-erp/products` |
 | `CLIENT_URL` | Frontend URL for CORS | `http://localhost:5173` |
 
 ## NPM Scripts
@@ -242,5 +252,7 @@ backend/
 | `401 Unauthorized` | Token expired — re-login; default expiry is 60 min |
 | `403 Forbidden` | User role lacks permission — check matrix above |
 | `400 Product image is required` | POST `/products` must include `image` file in form-data |
+| `400 File type ... not allowed` | Upload only supported image types: jpg, jpeg, png, webp, heic, heif |
+| `Cloudinary upload failed` | Verify `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in `.env` |
 | Swagger shows empty | Ensure server is running; docs are at `/api/v1/docs` |
 | `Transaction numbers are only allowed on a replica set` | Local standalone MongoDB doesn't support transactions. Sale API auto-falls back in dev. For production, use MongoDB replica set or Atlas |

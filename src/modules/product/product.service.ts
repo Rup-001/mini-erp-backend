@@ -31,7 +31,10 @@ export const createProduct = async (
     throw new ApiError(httpStatus.CONFLICT, 'SKU already exists');
   }
 
-  const imageUrl = '/' + imagePath.replace(/\\/g, '/');
+  const normalizedImagePath = imagePath.replace(/\\/g, '/');
+  const imageUrl = normalizedImagePath.startsWith('http://') || normalizedImagePath.startsWith('https://')
+    ? normalizedImagePath
+    : '/' + normalizedImagePath;
 
   const product = await Product.create({
     ...input,
@@ -81,7 +84,10 @@ export const updateProduct = async (
   }
 
   if (imagePath) {
-    product.imageUrl = '/' + imagePath.replace(/\\/g, '/');
+    const normalizedImagePath = imagePath.replace(/\\/g, '/');
+    product.imageUrl = normalizedImagePath.startsWith('http://') || normalizedImagePath.startsWith('https://')
+      ? normalizedImagePath
+      : '/' + normalizedImagePath;
   }
 
   Object.assign(product, input);

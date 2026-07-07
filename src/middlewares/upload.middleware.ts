@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import httpStatus from 'http-status';
 import { Request, Response, NextFunction } from 'express';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { config } from '../config/env';
 import { ApiError } from '../common/ApiError';
 
@@ -20,23 +22,51 @@ export const createUploadMiddleware = (uploadDir: string, allowedMimeTypes?: str
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, uploadDir);
-    },
-    filename: (_req, file, cb) => {
-      const fileExt = path.extname(file.originalname);
-      const filename =
-        file.originalname
-          .replace(fileExt, '')
-          .toLocaleLowerCase()
-          .split(' ')
-          .join('-') +
-        '-' +
-        Date.now();
-      cb(null, filename + fileExt);
-    },
-  });
+  if (config.upload.strategy === 'cloudinary') {
+    cloudinary.config({
+      cloud_name: config.upload.cloudinaryCloudName,
+      api_key: config.upload.cloudinaryApiKey,
+      api_secret: config.upload.cloudinaryApiSecret,
+    });
+  }
+
+  const storage = config.upload.strategy === 'cloudinary'
+    ? new CloudinaryStorage({
+        cloudinary,
+        params: async (_req, file) => {
+          const ext = path.extname(file.originalname).replace('.', '');
+          const baseName = file.originalname
+            .replace(path.extname(file.originalname), '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+
+          return {
+            folder: config.upload.cloudinaryFolder,
+            allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
+            public_id: `${baseName}-${Date.now()}`,
+            resource_type: 'image',
+            format: ext || undefined,
+          };
+        },
+      })
+    : multer.diskStorage({
+        destination: (_req, _file, cb) => {
+          cb(null, uploadDir);
+        },
+        filename: (_req, file, cb) => {
+          const fileExt = path.extname(file.originalname);
+          const filename =
+            file.originalname
+              .replace(fileExt, '')
+              .toLocaleLowerCase()
+              .split(' ')
+              .join('-') +
+            '-' +
+            Date.now();
+          cb(null, filename + fileExt);
+        },
+      });
 
   return multer({
     storage,

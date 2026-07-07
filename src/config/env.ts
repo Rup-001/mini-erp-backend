@@ -12,6 +12,11 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(60),
   UPLOAD_DIR: z.string().default('public/uploads/products'),
   MAX_FILE_SIZE_MB: z.coerce.number().default(5),
+  UPLOAD_STRATEGY: z.enum(['local', 'cloudinary']).default('cloudinary'),
+  CLOUDINARY_CLOUD_NAME: z.string().default(''),
+  CLOUDINARY_API_KEY: z.string().default(''),
+  CLOUDINARY_API_SECRET: z.string().default(''),
+  CLOUDINARY_FOLDER: z.string().default('mini-erp/products'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
 });
 
@@ -22,6 +27,9 @@ if (!parsed.success) {
 }
 
 const envVars = parsed.data;
+const hasCloudinaryConfig = Boolean(
+  envVars.CLOUDINARY_CLOUD_NAME && envVars.CLOUDINARY_API_KEY && envVars.CLOUDINARY_API_SECRET
+);
 
 export const config = {
   env: envVars.NODE_ENV,
@@ -36,6 +44,11 @@ export const config = {
   upload: {
     dir: envVars.UPLOAD_DIR,
     maxFileSizeMb: envVars.MAX_FILE_SIZE_MB,
+    strategy: hasCloudinaryConfig ? 'cloudinary' : envVars.UPLOAD_STRATEGY === 'cloudinary' ? 'cloudinary' : 'local',
+    cloudinaryCloudName: envVars.CLOUDINARY_CLOUD_NAME,
+    cloudinaryApiKey: envVars.CLOUDINARY_API_KEY,
+    cloudinaryApiSecret: envVars.CLOUDINARY_API_SECRET,
+    cloudinaryFolder: envVars.CLOUDINARY_FOLDER,
   },
   clientUrl: envVars.CLIENT_URL,
 };
