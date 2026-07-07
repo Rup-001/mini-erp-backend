@@ -18,11 +18,13 @@ const defaultMimeTypes = [
 ];
 
 export const createUploadMiddleware = (uploadDir: string, allowedMimeTypes?: string[]) => {
-  if (!fs.existsSync(uploadDir)) {
+  const useCloudinary = config.upload.strategy === 'cloudinary';
+
+  if (!useCloudinary && !fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  if (config.upload.strategy === 'cloudinary') {
+  if (useCloudinary) {
     cloudinary.config({
       cloud_name: config.upload.cloudinaryCloudName,
       api_key: config.upload.cloudinaryApiKey,
@@ -30,7 +32,7 @@ export const createUploadMiddleware = (uploadDir: string, allowedMimeTypes?: str
     });
   }
 
-  const storage = config.upload.strategy === 'cloudinary'
+  const storage = useCloudinary
     ? new CloudinaryStorage({
         cloudinary,
         params: async (_req, file) => {
