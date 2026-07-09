@@ -6,6 +6,15 @@ import swaggerDefinition from '../docs/swaggerDef';
 
 const router = Router();
 
+const DOCS_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://unpkg.com",
+  "style-src 'self' 'unsafe-inline' https://unpkg.com",
+  "img-src 'self' data: https://unpkg.com",
+  "font-src 'self' https://unpkg.com",
+  "connect-src 'self' https://unpkg.com",
+].join('; ');
+
 const docsGlob = fs.existsSync(path.join(process.cwd(), 'src/docs'))
   ? 'src/docs/*.ts'
   : 'dist/docs/*.js';
@@ -16,11 +25,13 @@ const specs = swaggerJsdoc({
 });
 
 router.get('/swagger.json', (_req, res: Response) => {
+  res.setHeader('Content-Security-Policy', DOCS_CSP);
   res.setHeader('Content-Type', 'application/json');
   res.send(specs);
 });
 
 router.get('/', (_req, res: Response) => {
+  res.setHeader('Content-Security-Policy', DOCS_CSP);
   const html = `
 <!DOCTYPE html>
 <html lang="en">

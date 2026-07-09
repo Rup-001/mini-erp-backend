@@ -4,9 +4,9 @@
   "description": "Mini ERP - Inventory & Sales Management System API",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "node init && ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "node init && tsc",
+    "start": "node init && node dist/server.js",
     "seed": "ts-node src/scripts/seed.ts"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-fetch": "^3.3.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "swagger-jsdoc": "^6.2.8",
