@@ -1,5 +1,8 @@
 import { config } from '../config/env';
 
+import './paths';
+import './components';
+
 const swaggerDef = {
   openapi: '3.0.0',
   info: {
